@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 import os
 
 class Entry:
@@ -11,7 +11,7 @@ class Entry:
 class DiaryApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Personal Diary")
+        self.root.title("Dear Diary")
         
         self.entry_list = []
         self.entries_folder = "diary_entries"
@@ -23,16 +23,32 @@ class DiaryApp:
     
     def create_ui(self):
         self.date_entry = PlaceholderEntry(self.root, "YYYY-MM-DD")
-        self.date_entry.pack(padx=10, pady=5)
+        self.date_entry.grid(row=0, column=0, padx=10, pady=5)
         
         self.title_entry = PlaceholderEntry(self.root, "Enter Title")
-        self.title_entry.pack(padx=10, pady=5)
+        self.title_entry.grid(row=1, column=0, padx=10, pady=5)
         
         self.entry_text = tk.Text(self.root, height=10, width=40)
-        self.entry_text.pack(padx=10, pady=10)
+        self.entry_text.grid(row=2, column=0, padx=10, pady=10)
         
         add_button = tk.Button(self.root, text="Add Entry", command=self.add_entry)
-        add_button.pack(pady=5)
+        add_button.grid(row=3, column=0, pady=5)
+        
+        self.tree = ttk.Treeview(self.root, columns=("Date", "Title"), show="headings")
+        self.tree.heading("Date", text="Date")
+        self.tree.heading("Title", text="Title")
+        self.tree.grid(row=0, column=1, rowspan=4, padx=10, pady=10, sticky="nsew")
+        
+        # Populate the treeview with existing entries
+        self.populate_treeview_with_entries()
+        
+        # Bind double click to show selected entry
+        self.tree.bind("<Double-1>", self.show_selected_entry)
+        
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
+        self.root.grid_rowconfigure(2, weight=1)
+        
         
     def add_entry(self):
         date = self.date_entry.get()
@@ -52,27 +68,42 @@ class DiaryApp:
         self.entry_text.delete("1.0", "end")
         
         messagebox.showinfo("Success", "Entry added successfully!")
+        
     def save_entry_to_file(self, entry):
         entry_filename = os.path.join(self.entries_folder, f"{entry.date}_{entry.title}.txt")
         with open(entry_filename, "w") as f:
-            f.write(f"Date: {entry.date}\n")
-            f.write(f"Title: {entry.title}\n")
-            f.write(f"Content:\n{entry.content}\n")
-    
-    def view_entries(self):
-        if self.entry_list:
-            entry_window = tk.Toplevel(self.root)
-            entry_window.title("View Entries")
+            f.write(f"{entry.date}\n")
+            f.write(f"{entry.title}\n")
+            f.write(f"{entry.content}\n")
             
-            entries_text = tk.Text(entry_window, height=10, width=40)
-            entries_text.pack(padx=10, pady=10)
             
-            for entry in self.entry_list:
-                entries_text.insert("end", f"{entry.title}\n{entry.date}\n{entry.content}\n\n")
+    def populate_treeview_with_entries(self):
+        self.tree.delete(*self.tree.get_children())  # Clear existing entries
+        
+        for filename in os.listdir(self.entries_folder):
+            if filename.endswith(".txt"):
+                with open(os.path.join(self.entries_folder, filename), "r") as f:
+                    lines = f.readlines()
+                    date = lines[0].replace("Date: ", "").strip()
+                    title = lines[1].replace("Title: ", "").strip()
+                    self.tree.insert("", "end", values=(date, title))
             
-            entries_text.config(state="disabled")
-        else:
-            messagebox.showinfo("No Entries", "No entries to display.")
+    def show_selected_entry(self, event):
+        selected_item = self.tree.selection()[0]
+        date, title = self.tree.item(selected_item, "values")
+        
+        entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
+        with open(entry_filename, "r") as f:
+            content = f.read()
+        
+        entry_window = tk.Toplevel(self.root)
+        entry_window.title(f"{title}")
+        
+        entry_text = tk.Text(entry_window, height=10, width=40)
+        entry_text.pack(padx=10, pady=10)
+        
+        entry_text.insert("end", content)
+        entry_text.config(state="disabled")
             
 class PlaceholderEntry(tk.Entry):
     def __init__(self, parent, placeholder, *args, **kwargs):
@@ -99,5 +130,6 @@ class PlaceholderEntry(tk.Entry):
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.geometry("800x500")  # Set the size of the main window
     app = DiaryApp(root)
     root.mainloop()
