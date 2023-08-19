@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
+import datetime
 
 class Entry:
     def __init__(self, date, title, content):
@@ -11,7 +12,7 @@ class Entry:
 class DiaryApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Dear Diary")
+        self.root.title("DearDiary")
         
         self.entry_list = []
         self.entries_folder = "diary_entries"
@@ -22,21 +23,34 @@ class DiaryApp:
         self.create_ui()
     
     def create_ui(self):
-        self.date_entry = PlaceholderEntry(self.root, "YYYY-MM-DD")
+        self.date_entry = tk.Entry(self.root)
         self.date_entry.grid(row=0, column=0, padx=10, pady=5)
+        self.date_entry.config(bg="#fbf2c0")  # Set the background color here
+        
+        # Automatically set the current date in the date_entry field
+        current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        self.date_entry.insert(0, current_date)
         
         self.title_entry = PlaceholderEntry(self.root, "Enter Title")
         self.title_entry.grid(row=1, column=0, padx=10, pady=5)
+        self.title_entry.config(bg="#fbf2c0")  # Set the background color here
         
-        self.entry_text = tk.Text(self.root, height=10, width=40)
+        self.entry_text = tk.Text(self.root, height=15, width=60) # Adjust height and width as needed
         self.entry_text.grid(row=2, column=0, padx=10, pady=10)
+        self.entry_text.config(bg="#fbf2c0")  # Set the background color here
         
-        add_button = tk.Button(self.root, text="Add Entry", command=self.add_entry)
+        add_button = tk.Button(self.root, text="Add Entry", command=self.add_entry, width=20)
         add_button.grid(row=3, column=0, pady=5)
         
         self.tree = ttk.Treeview(self.root, columns=("Date", "Title"), show="headings")
         self.tree.heading("Date", text="Date")
         self.tree.heading("Title", text="Title")
+        
+        # Configure the Treeview style to change the background color of the section
+        style = ttk.Style()
+        style.configure("Treeview", background="#fbf2c0")  # Set the desired background color
+        
+        
         self.tree.grid(row=0, column=1, rowspan=4, padx=10, pady=10, sticky="nsew")
         
         # Populate the treeview with existing entries
@@ -55,7 +69,12 @@ class DiaryApp:
         title = self.title_entry.get()
         content = self.entry_text.get("1.0", "end-1c")
         
-        if date == "YYYY-MM-DD" or title == "Enter Title" or not content:
+        # Automatically set the current date in the date_entry field
+        current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        self.date_entry.delete(0, tk.END)
+        self.date_entry.insert(0, current_date)
+        
+        if title == "Enter Title" or not content:
             messagebox.showwarning("Incomplete Entry", "Please fill in all fields.")
             return
         
@@ -63,18 +82,24 @@ class DiaryApp:
         self.entry_list.append(entry)
         self.save_entry_to_file(entry)
         
-        self.date_entry.delete(0, "end")
-        self.title_entry.delete(0, "end")
+        # Clear the entry fields
         self.entry_text.delete("1.0", "end")
         
+        # Set the title entry to display the placeholder text
+        self.title_entry.delete(0, tk.END)
+        self.title_entry.insert(0, "Enter Title")
+        
         messagebox.showinfo("Success", "Entry added successfully!")
+        
+        # Update the Treeview with the latest entries
+        self.populate_treeview_with_entries()
         
     def save_entry_to_file(self, entry):
         entry_filename = os.path.join(self.entries_folder, f"{entry.date}_{entry.title}.txt")
         with open(entry_filename, "w") as f:
             f.write(f"{entry.date}\n")
             f.write(f"{entry.title}\n")
-            f.write(f"{entry.content}\n")
+            f.write(f"Content:\n{entry.content}\n")
             
             
     def populate_treeview_with_entries(self):
@@ -94,13 +119,19 @@ class DiaryApp:
         
         entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
         with open(entry_filename, "r") as f:
-            content = f.read()
+            content = f.read().split("Content:\n", 1)[-1]  # Extract only the content
         
         entry_window = tk.Toplevel(self.root)
-        entry_window.title(f"{title}")
+        entry_window.title(f"{title} - {date}")
         
-        entry_text = tk.Text(entry_window, height=10, width=40)
+        # Set the background color of the entry_window
+        entry_window.config(bg="#43281c")  # Set your desired background color
+        
+        entry_text = tk.Text(entry_window, height=30, width=60)
         entry_text.pack(padx=10, pady=10)
+        
+        # Set the background color of the text box where entry content is displayed
+        entry_text.config(bg="#fbf2c0")  # Replace with your desired color
         
         entry_text.insert("end", content)
         entry_text.config(state="disabled")
@@ -125,11 +156,19 @@ class PlaceholderEntry(tk.Entry):
 
     def put_placeholder(self):
         self.insert(0, self.placeholder)
-        self['fg'] = 'grey'
+        self['fg'] = 'black'
         
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("800x500")  # Set the size of the main window
+    root.geometry("1080x560")  # Set the size of the main window
+    
+    # Change the background color of the root window
+    root.configure(bg="#43281c")
+    
+    # Change the icon of the window using the iconbitmap() method
+    icon_path = "diary_pic.ico"  # path to icon file
+    root.iconbitmap(icon_path)
+    
     app = DiaryApp(root)
     root.mainloop()
