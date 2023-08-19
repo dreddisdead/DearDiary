@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 import os
 import datetime
 
@@ -124,6 +124,10 @@ class DiaryApp:
         entry_window = tk.Toplevel(self.root)
         entry_window.title(f"{title} - {date}")
         
+        # Set the icon for the view_entries window
+        icon_path = "diary_pic.ico"  # Replace with the path to your icon file
+        entry_window.iconbitmap(icon_path)
+        
         # Set the background color of the entry_window
         entry_window.config(bg="#43281c")  # Set your desired background color
         
@@ -135,7 +139,28 @@ class DiaryApp:
         
         entry_text.insert("end", content)
         entry_text.config(state="disabled")
-            
+        
+        # Add a "Delete Entry" button
+        delete_button = tk.Button(entry_window, text="Delete Entry", command=lambda: self.confirm_delete(entry_filename))
+        delete_button.pack(pady=5)
+        
+        
+    def confirm_delete(self, entry_filename):
+        # Prompt the user for a password to confirm deletion
+        password = simpledialog.askstring("Password Confirmation", "Enter your password:")
+        
+        # Verify the entered password against a stored password
+        stored_password = "notboobs"  # Set your desired password here
+        if password == stored_password:
+            # If the password matches, delete the entry
+            os.remove(entry_filename)
+            messagebox.showinfo("Delete Entry", "Entry deleted successfully!")
+            # Update the Treeview with the latest entries
+            self.populate_treeview_with_entries()
+        else:
+            messagebox.showerror("Delete Entry", "Incorrect password. Entry not deleted.")
+
+         
 class PlaceholderEntry(tk.Entry):
     def __init__(self, parent, placeholder, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
