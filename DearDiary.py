@@ -21,6 +21,7 @@ class DiaryApp:
         os.makedirs(self.entries_folder, exist_ok=True)
         
         self.create_ui()
+        
     
     def create_ui(self):
         self.date_entry = tk.Entry(self.root)
@@ -131,7 +132,7 @@ class DiaryApp:
         # Set the background color of the entry_window
         entry_window.config(bg="#43281c")  # Set your desired background color
         
-        entry_text = tk.Text(entry_window, height=30, width=60)
+        entry_text = tk.Text(entry_window, height=20, width=60)
         entry_text.pack(padx=10, pady=10)
         
         # Set the background color of the text box where entry content is displayed
@@ -140,14 +141,62 @@ class DiaryApp:
         entry_text.insert("end", content)
         entry_text.config(state="disabled")
         
+        # Add an "Edit Entry" button that allows editing within the same window
+        edit_entry_button = tk.Button(entry_window, text="Edit Entry", command=lambda: self.toggle_edit_entry(entry_text, content))
+        edit_entry_button.pack(pady=5)
+              
         # Add a "Delete Entry" button
         delete_button = tk.Button(entry_window, text="Delete Entry", command=lambda: self.confirm_delete(entry_filename))
         delete_button.pack(pady=5)
         
         
+    def toggle_edit_entry(self, entry_text, content):
+        # Toggle the state of the text box for editing content
+        current_state = entry_text.cget("state")
+        new_state = "normal" if current_state == "disabled" else "disabled"
+        entry_text.config(state=new_state)
+        # Edit the text of the button to reflect the current state
+        edit_entry_button = entry_text.master.children["!button"]
+        edit_entry_button.config(text="Save Entry" if new_state == "normal" else "Edit Entry")
+        # If the state is disabled, save the changes to disk
+        if new_state == "disabled":
+            selected_item = self.tree.selection()[0]
+            new_content = entry_text.get("1.0", "end-1c")
+            self.save_changes(selected_item, new_content, entry_text)
+              
+        
+    def save_changes(self, selected_item, new_content, entry_text):    
+        # Get global reference to the entry_list
+        global entry_list
+        
+        # Get the current content of the entry
+        date, title = self.tree.item(selected_item, "values")
+        entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
+        with open(entry_filename, "r") as f:
+            content = f.read().split("Content:\n", 1)[-1]
+             
+        # If no changes were made, do nothing otherwise save the changes to disk
+        if new_content == content:
+            return
+        else:
+            # Overwrite the existing file with the new content
+            date, title = self.tree.item(selected_item, "values")
+            entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
+            with open(entry_filename, "w") as f:
+                f.write(f"Date: {date}\n")
+                f.write(f"Title: {title}\n")
+                f.write(f"Content:\n{new_content}\n")
+        
+            # Refresh the Treeview to reflect changes
+            self.populate_treeview_with_entries()
+            
+            messagebox.showinfo("Edit Entry", "Entry edited successfully!")
+        
+        
     def confirm_delete(self, entry_filename):
-        # Prompt the user for a password to confirm deletion
-        password = simpledialog.askstring("Password Confirmation", "Enter your password:")
+        # Prompt the user for a password to confirm deletion and set window size
+        password = simpledialog.askstring("Delete Entry", "Enter password to confirm deletion:", parent=self.root, show="*")
+        
         
         # Verify the entered password against a stored password
         stored_password = "notboobs"  # Set your desired password here
