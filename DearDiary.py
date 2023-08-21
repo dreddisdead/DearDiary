@@ -126,7 +126,7 @@ class DiaryApp:
         entry_window.title(f"{title} - {date}")
         
         # Set the icon for the view_entries window
-        icon_path = "diary_pic.ico"  # Replace with the path to your icon file
+        icon_path = "pen.ico"  # Replace with the path to your icon file
         entry_window.iconbitmap(icon_path)
         
         # Set the background color of the entry_window
@@ -199,13 +199,18 @@ class DiaryApp:
         
         
         # Verify the entered password against a stored password
-        stored_password = "notboobs"  # Set your desired password here
+        stored_password = "boobs"  # Set your desired password here
         if password == stored_password:
             # If the password matches, delete the entry
             os.remove(entry_filename)
             messagebox.showinfo("Delete Entry", "Entry deleted successfully!")
             # Update the Treeview with the latest entries
             self.populate_treeview_with_entries()
+            
+        # else if cancel button is clicked, do nothing
+        elif password is None:
+            return
+        
         else:
             messagebox.showerror("Delete Entry", "Incorrect password. Entry not deleted.")
 
@@ -241,7 +246,7 @@ if __name__ == "__main__":
     root.configure(bg="#43281c")
     
     # Change the icon of the window using the iconbitmap() method
-    icon_path = "diary_pic.ico"  # path to icon file
+    icon_path = "pen.ico"  # path to icon file
     root.iconbitmap(icon_path)
     
     app = DiaryApp(root)
