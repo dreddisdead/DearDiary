@@ -1,7 +1,8 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, simpledialog
+from tkinter import ttk, messagebox, simpledialog, scrolledtext
 import os
 import datetime
+from tkinter import font as tkFont
 
 class Entry:
     def __init__(self, date, title, content):
@@ -22,6 +23,26 @@ class DiaryApp:
         
         self.create_ui()
         
+        # Create a font selection dropdown
+        self.font_label = tk.Label(self.root, text="Select Font:")
+        self.font_label.grid(row=4, column=0, padx=10, pady=5)
+        self.font_var = tk.StringVar()
+        self.font_var.set("Arial")  # Set a default font
+        self.font_dropdown = tk.OptionMenu(self.root, self.font_var, "Arial", "Times New Roman", "Courier New")
+        self.font_dropdown.grid(row=4, column=1, padx=10, pady=5)
+        
+        # Add a trace to call change_font when the font selection changes
+        self.font_var.trace_add('write', self.change_font)
+        
+    def change_font(self, *args):
+        selected_font = self.font_var.get()
+        font = tkFont.Font(family=selected_font, size=12)  # Change size as needed
+        self.entry_text.config(font=font) 
+        
+    
+    # function to store current selected font
+    def get_font(self):
+        return self.font_var.get()   
     
     def create_ui(self):
         self.date_entry = tk.Entry(self.root)
@@ -36,9 +57,9 @@ class DiaryApp:
         self.title_entry.grid(row=1, column=0, padx=10, pady=5)
         self.title_entry.config(bg="#fbf2c0")  # Set the background color here
         
-        self.entry_text = tk.Text(self.root, height=15, width=60) # Adjust height and width as needed
+        self.entry_text = scrolledtext.ScrolledText(self.root, height=15, width=60) # Adjust height and width as needed
         self.entry_text.grid(row=2, column=0, padx=10, pady=10)
-        self.entry_text.config(bg="#fbf2c0")  # Set the background color here
+        self.entry_text.config(bg="#fbf2c0", wrap=tk.WORD, font=('Arial', 12))  # Set the background color here
         
         add_button = tk.Button(self.root, text="Add Entry", command=self.add_entry, width=20)
         add_button.grid(row=3, column=0, pady=5)
@@ -69,6 +90,7 @@ class DiaryApp:
         date = self.date_entry.get()
         title = self.title_entry.get()
         content = self.entry_text.get("1.0", "end-1c")
+        font = self.get_font()
         
         # Automatically set the current date in the date_entry field
         current_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -81,7 +103,7 @@ class DiaryApp:
         
         entry = Entry(date, title, content)
         self.entry_list.append(entry)
-        self.save_entry_to_file(entry)
+        self.save_entry_to_file(entry, font)
         
         # Clear the entry fields
         self.entry_text.delete("1.0", "end")
@@ -95,12 +117,13 @@ class DiaryApp:
         # Update the Treeview with the latest entries
         self.populate_treeview_with_entries()
         
-    def save_entry_to_file(self, entry):
+    def save_entry_to_file(self, entry, font):
         entry_filename = os.path.join(self.entries_folder, f"{entry.date}_{entry.title}.txt")
         with open(entry_filename, "w") as f:
             f.write(f"{entry.date}\n")
             f.write(f"{entry.title}\n")
-            f.write(f"Content:\n{entry.content}\n")
+            f.write(f"Font:{font}\n")
+            f.write(f"Content:{entry.content}\n")
             
             
     def populate_treeview_with_entries(self):
@@ -119,8 +142,19 @@ class DiaryApp:
         date, title = self.tree.item(selected_item, "values")
         
         entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
+        
         with open(entry_filename, "r") as f:
-            content = f.read().split("Content:\n", 1)[-1]  # Extract only the content
+            lines = f.readlines()
+            font = None
+            content = []
+            
+            for line in lines:
+                if line.startswith("Font:"):
+                    font = line.replace("Font:", "").strip()
+                elif line.startswith("Content:"):
+                    content = line.split("Content:", 1)[-1].strip()
+
+
         
         entry_window = tk.Toplevel(self.root)
         entry_window.title(f"{title} - {date}")
@@ -132,11 +166,12 @@ class DiaryApp:
         # Set the background color of the entry_window
         entry_window.config(bg="#43281c")  # Set your desired background color
         
+        
         entry_text = tk.Text(entry_window, height=20, width=60)
         entry_text.pack(padx=10, pady=10)
         
         # Set the background color of the text box where entry content is displayed
-        entry_text.config(bg="#fbf2c0")  # Replace with your desired color
+        entry_text.config(bg="#fbf2c0", font=(font, 12))  # Replace with your desired color
         
         entry_text.insert("end", content)
         entry_text.config(state="disabled")
@@ -173,7 +208,7 @@ class DiaryApp:
         date, title = self.tree.item(selected_item, "values")
         entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
         with open(entry_filename, "r") as f:
-            content = f.read().split("Content:\n", 1)[-1]
+            content = f.read().split("Content:", 1)[-1]
              
         # If no changes were made, do nothing otherwise save the changes to disk
         if new_content == content:
@@ -183,9 +218,10 @@ class DiaryApp:
             date, title = self.tree.item(selected_item, "values")
             entry_filename = os.path.join(self.entries_folder, f"{date}_{title}.txt")
             with open(entry_filename, "w") as f:
-                f.write(f"Date: {date}\n")
-                f.write(f"Title: {title}\n")
-                f.write(f"Content:\n{new_content}\n")
+                f.write(f"{date}\n")
+                f.write(f"{title}\n")
+                f.write(f"Font:{self.get_font()}\n")
+                f.write(f"Content:{new_content}\n")
         
             # Refresh the Treeview to reflect changes
             self.populate_treeview_with_entries()
