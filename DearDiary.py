@@ -24,13 +24,11 @@ class DiaryApp:
         self.create_ui()
         
         # Create a font selection dropdown
-        self.font_label = tk.Label(self.root, text="Select Font:")
-        self.font_label.grid(row=4, column=0, padx=10, pady=5)
         self.font_var = tk.StringVar()
         self.font_var.set("Arial")  # Set a default font
-        self.font_dropdown = tk.OptionMenu(self.root, self.font_var, "Arial", "Times New Roman", "Courier New")
-        self.font_dropdown.grid(row=4, column=1, padx=10, pady=5)
-        
+        self.font_dropdown = tk.OptionMenu(self.root, self.font_var, "Arial", "Times New Roman", "Courier New", "Calibri", "Comic Sans MS", "Verdana", "Georgia", "Impact", "Lucida Console", "Tahoma", "Trebuchet MS")
+        self.font_dropdown.grid(row=4, column=0, padx=10, pady=5)
+         
         # Add a trace to call change_font when the font selection changes
         self.font_var.trace_add('write', self.change_font)
         
@@ -88,7 +86,7 @@ class DiaryApp:
         
     def add_entry(self):
         date = self.date_entry.get()
-        title = self.title_entry.get()
+        title = self.title_entry.get().strip() #removes spaces from front and end of text
         content = self.entry_text.get("1.0", "end-1c")
         font = self.get_font()
         
