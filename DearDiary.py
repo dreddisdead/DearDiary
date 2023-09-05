@@ -3,6 +3,7 @@ from tkinter import ttk, messagebox, simpledialog, scrolledtext
 import os
 import datetime
 from tkinter import font as tkFont
+from ttkthemes import ThemedTk
 
 class Entry:
     def __init__(self, date, title, content):
@@ -11,9 +12,15 @@ class Entry:
         self.content = content
 
 class DiaryApp:
-    def __init__(self, root):
-        self.root = root
+    def __init__(self):
+        self.root = ThemedTk()
         self.root.title("DearDiary")
+        # Set size of window
+        self.root.geometry("1080x560")
+        
+        # Change the icon of the window using the iconbitmap() method
+        self.icon_path = "pen.ico"  # path to icon file
+        self.root.iconbitmap(self.icon_path)
         
         self.entry_list = []
         self.entries_folder = "diary_entries"
@@ -21,16 +28,17 @@ class DiaryApp:
         # Create the entries folder if it doesn't exist
         os.makedirs(self.entries_folder, exist_ok=True)
         
+        
         self.create_ui()
         
-        # Create a font selection dropdown
-        self.font_var = tk.StringVar()
-        self.font_var.set("Arial")  # Set a default font
-        self.font_dropdown = tk.OptionMenu(self.root, self.font_var, "Arial", "Times New Roman", "Courier New", "Calibri", "Comic Sans MS", "Verdana", "Georgia", "Impact", "Lucida Console", "Tahoma", "Trebuchet MS")
-        self.font_dropdown.grid(row=4, column=0, padx=10, pady=5)
-         
-        # Add a trace to call change_font when the font selection changes
-        self.font_var.trace_add('write', self.change_font)
+        self.root.mainloop()
+        
+    # Change style
+    def change_theme(self, theme):
+        style = ttk.Style(self.root)
+        # Change style
+        style.theme_use(theme)
+        
         
     def change_font(self, *args):
         selected_font = self.font_var.get()
@@ -40,50 +48,112 @@ class DiaryApp:
     
     # function to store current selected font
     def get_font(self):
-        return self.font_var.get()   
+        return self.font_var.get() 
     
-    def create_ui(self):
-        self.date_entry = tk.Entry(self.root)
-        self.date_entry.grid(row=0, column=0, padx=10, pady=5)
-        self.date_entry.config(bg="#fbf2c0")  # Set the background color here
+    def view_entry_tab(self):
+        self.view_entry_notebook = ttk.Notebook(self.root)
+        self.view_entry_notebook.grid(row=0, column=1, padx=10, pady=10)  
         
-        # Automatically set the current date in the date_entry field
-        current_date = datetime.datetime.now().strftime("%Y-%m-%d")
-        self.date_entry.insert(0, current_date)
+        # Create a frame for the notebook
+        self.view_entry_frame = tk.Frame(self.view_entry_notebook, width=500, height=500)
         
-        self.title_entry = PlaceholderEntry(self.root, "Enter Title")
-        self.title_entry.grid(row=1, column=0, padx=10, pady=5)
-        self.title_entry.config(bg="#fbf2c0")  # Set the background color here
         
-        self.entry_text = scrolledtext.ScrolledText(self.root, height=15, width=60) # Adjust height and width as needed
-        self.entry_text.grid(row=2, column=0, padx=10, pady=10)
-        self.entry_text.config(bg="#fbf2c0", wrap=tk.WORD, font=('Arial', 12))  # Set the background color here
-        
-        add_button = tk.Button(self.root, text="Add Entry", command=self.add_entry, width=20)
-        add_button.grid(row=3, column=0, pady=5)
-        
-        self.tree = ttk.Treeview(self.root, columns=("Date", "Title"), show="headings")
+        self.view_entry_frame.pack(fill="both", expand=1)
+        # Put treeview inside this frame
+        self.tree = ttk.Treeview(self.view_entry_frame, columns=("Date", "Title"), show="headings")
         self.tree.heading("Date", text="Date")
         self.tree.heading("Title", text="Title")
-        
-        # Configure the Treeview style to change the background color of the section
-        style = ttk.Style()
-        style.configure("Treeview", background="#fbf2c0")  # Set the desired background color
-        
-        
-        self.tree.grid(row=0, column=1, rowspan=4, padx=10, pady=10, sticky="nsew")
+        self.tree.grid(row=0, column=0, padx=10, pady=10)
+
         
         # Populate the treeview with existing entries
         self.populate_treeview_with_entries()
-        
         # Bind double click to show selected entry
         self.tree.bind("<Double-1>", self.show_selected_entry)
         
-        self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_columnconfigure(1, weight=1)
-        self.root.grid_rowconfigure(2, weight=1)
+        
+        # Add the frames to the notebook
+        self.view_entry_notebook.add(self.view_entry_frame, text="View Entries")
+        
+    def date_and_title(self):
+        # Create a frame to hold the date and title entry fields
+        self.date_and_title_frame = tk.Frame(self.root)
+        self.date_and_title_frame.grid(row=0, column=0, padx=10, pady=5)
+        
+        # Place the date and title entry fields in the frame
+        self.date_entry = ttk.Entry(self.date_and_title_frame)
+        self.date_entry.grid(row=0, column=0, padx=10, pady=5)
+        # Automatically set the current date in the date_entry field
+        self.current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        self.date_entry.insert(0, self.current_date)
+        
+        # Create title entry with placeholder text
+        self.title_entry = ttk.Entry(self.date_and_title_frame)
+        self.title_entry.insert(0, "Enter Title")
+        self.title_entry.grid(row=1, column=0, padx=10, pady=5)
+        
+    def entry_text(self):
+        # Create a frame to hold the entry text field
+        self.entry_text_frame = tk.Frame(self.root)
+        self.entry_text_frame.grid(row=1, column=0, padx=10, pady=5)
+        
+        # Place the entry text field in the frame
+        self.entry_text = scrolledtext.ScrolledText(self.entry_text_frame, height=15, width=60) # Adjust height and width as needed
+        self.entry_text.grid(row=0, column=0, padx=10, pady=5)
+        self.entry_text.config(wrap=tk.WORD, font=('Arial', 12))
+              
+    
+    def create_ui(self):
+        # Configure the root window grid layout
+        self.root.columnconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        self.root.rowconfigure(1, weight=1)
+        self.root.rowconfigure(2, weight=1)
         
         
+        # Create a menu bar with options
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
+        
+        # Close or force quit
+        self.file_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.file_menu.add_command(label="Close", command=self.root.destroy)
+        self.menu_bar.add_cascade(label="File", menu=self.file_menu)
+        # Choose a theme
+        self.theme_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label="Themes", menu=self.theme_menu)
+         
+        # see included themes
+        self.our_themes = self.root.get_themes()
+        # Loop through themes and add them to the menu
+        for theme in self.our_themes:
+            self.theme_menu.add_radiobutton(label=theme, command=lambda theme=theme: self.change_theme(theme))
+ 
+ 
+        # Call the date_and_title function
+        self.date_and_title()
+        
+        # Call the entry_text function
+        self.entry_text()
+        
+        add_button = ttk.Button(self.root, text="Add Entry", command=self.add_entry, width=20)
+        add_button.grid(row=3, column=0, padx=10, pady=5)
+        
+        # Create a font selection dropdown
+        self.font_var = tk.StringVar()
+        self.font_var.set("Arial")  # Set a default font
+        self.list_of_fonts = ["Arial", "Times New Roman", "Courier New", "Calibri", "Comic Sans MS", "Verdana", "Georgia", "Impact", "Lucida Console", "Tahoma", "Trebuchet MS"]
+        self.font_dropdown = ttk.OptionMenu(self.root, self.font_var, *self.list_of_fonts)
+        self.font_dropdown.grid(row=4, column=0, padx=10, pady=5)
+         
+        # Add a trace to call change_font when the font selection changes
+        self.font_var.trace_add('write', self.change_font)
+        
+        # Call the view_entry_tab function
+        self.view_entry_tab()
+        
+             
     def add_entry(self):
         date = self.date_entry.get()
         title = self.title_entry.get().strip() #removes spaces from front and end of text
@@ -95,7 +165,7 @@ class DiaryApp:
         self.date_entry.delete(0, tk.END)
         self.date_entry.insert(0, current_date)
         
-        if title == "Enter Title" or not content:
+        if title == "Enter Title" or not content or title == "":
             messagebox.showwarning("Incomplete Entry", "Please fill in all fields.")
             return
         
@@ -153,26 +223,29 @@ class DiaryApp:
                     content = line.split("Content:", 1)[-1].strip()
 
 
+        # Open a new tab within the view_entry_notebook to show the selected entry
+        self.view_entry_notebook.add(tk.Frame(self.view_entry_notebook), text=f"{title}")
+        # Select the newly created tab
+        self.view_entry_notebook.select(self.view_entry_notebook.tabs()[-1])
+        # Display the selected entry in the new tab
+        self.display_entry(title, date, content, font, entry_filename)
+        ### GOT SOMEWHERE NOW NEED TO FIGURE OUT HOW TO DISPLAY THE ENTRY IN THE NEW TAB ### WITH THE EDIT AND DELETE BUTTONS
         
-        entry_window = tk.Toplevel(self.root)
-        entry_window.title(f"{title} - {date}")
         
-        # Set the icon for the view_entries window
-        icon_path = "pen.ico"  # Replace with the path to your icon file
-        entry_window.iconbitmap(icon_path)
         
-        # Set the background color of the entry_window
-        entry_window.config(bg="#43281c")  # Set your desired background color
+        ### OLD CODE FOR REFERENCE ###
+        # entry_window = tk.Toplevel(self.root)
+        # entry_window.title(f"{title} - {date}")
         
+        # Change the icon of the window using the iconbitmap() method
+        entry_window.iconbitmap(self.icon_path)
+    
         
         entry_text = tk.Text(entry_window, height=20, width=60)
         entry_text.pack(padx=10, pady=10)
         
-        # Set the background color of the text box where entry content is displayed
-        entry_text.config(bg="#fbf2c0", font=(font, 12))  # Replace with your desired color
-        
         entry_text.insert("end", content)
-        entry_text.config(state="disabled")
+        entry_text.config(state="disabled", font=(font, 12))
         
         # Add an "Edit Entry" button that allows editing within the same window
         edit_entry_button = tk.Button(entry_window, text="Edit Entry", command=lambda: self.toggle_edit_entry(entry_text, content))
@@ -183,7 +256,20 @@ class DiaryApp:
         delete_button.pack(pady=5)
         
         
+        # Drop down menu to select font   
+        self.font_var.set(font)
+        self.font_dropdown = tk.OptionMenu(entry_window, self.font_var, *self.list_of_fonts)
+        self.font_dropdown.pack(pady=5)
+        self.font_var.trace_add('write', lambda *args: self.change_font(entry_text, self.font_var.get()))
+        # grey out the font selection dropdown
+        self.font_dropdown.config(state="disabled")
+        
+        
+         
+        
     def toggle_edit_entry(self, entry_text, content):
+        # undo the grey out of the font selection dropdown
+        self.font_dropdown.config(state="normal")
         # Toggle the state of the text box for editing content
         current_state = entry_text.cget("state")
         new_state = "normal" if current_state == "disabled" else "disabled"
@@ -193,9 +279,15 @@ class DiaryApp:
         edit_entry_button.config(text="Save Entry" if new_state == "normal" else "Edit Entry")
         # If the state is disabled, save the changes to disk
         if new_state == "disabled":
+            # grey out the font selection dropdown now that the entry is saved
+            self.font_dropdown.config(state="disabled")
             selected_item = self.tree.selection()[0]
             new_content = entry_text.get("1.0", "end-1c")
             self.save_changes(selected_item, new_content, entry_text)
+        else:
+            new_state = "normal"
+            
+            
               
         
     def save_changes(self, selected_item, new_content, entry_text):    
@@ -220,6 +312,7 @@ class DiaryApp:
                 f.write(f"{title}\n")
                 f.write(f"Font:{self.get_font()}\n")
                 f.write(f"Content:{new_content}\n")
+            
         
             # Refresh the Treeview to reflect changes
             self.populate_treeview_with_entries()
@@ -247,41 +340,10 @@ class DiaryApp:
         
         else:
             messagebox.showerror("Delete Entry", "Incorrect password. Entry not deleted.")
-
-         
-class PlaceholderEntry(tk.Entry):
-    def __init__(self, parent, placeholder, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        self.placeholder = placeholder
-        self.default_fg_color = self['fg']
-        self.bind("<FocusIn>", self.focus_in)
-        self.bind("<FocusOut>", self.focus_out)
-        self.put_placeholder()
-
-    def focus_in(self, event):
-        if self.get() == self.placeholder:
-            self.delete(0, tk.END)
-            self['fg'] = self.default_fg_color
-
-    def focus_out(self, event):
-        if not self.get():
-            self.put_placeholder()
-
-    def put_placeholder(self):
-        self.insert(0, self.placeholder)
-        self['fg'] = 'black'
         
 
+
+# Run the app
 if __name__ == "__main__":
-    root = tk.Tk()
-    root.geometry("1080x560")  # Set the size of the main window
+    app = DiaryApp()
     
-    # Change the background color of the root window
-    root.configure(bg="#43281c")
-    
-    # Change the icon of the window using the iconbitmap() method
-    icon_path = "pen.ico"  # path to icon file
-    root.iconbitmap(icon_path)
-    
-    app = DiaryApp(root)
-    root.mainloop()
