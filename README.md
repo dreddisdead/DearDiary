@@ -1,5 +1,6 @@
 # DearDiary
- Diary/Journal entry program
+Simple Diary App
 
 ## Description
-User can create a diary entry with a date, title, and body. The entry is saved locally and can be viewed later. The user can also delete entries.
+
+Want something simple to jot down your thoughts? Well, DearDiary lets you create journal entries and save them locally. You can view, edit and delete entries as you'd like.
