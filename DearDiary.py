@@ -7,73 +7,7 @@ import os
 import datetime
 # from tkinter import font as tkFont
 
-
-# # Current work in progress
-# class LoginScreen:
-#     def __init__(self, root):
-#         self.root = root
-#         self.root.title("DearDiary")
-#         self.root.style.theme_use("vapor")
-#         self.root.iconbitmap("DearDiary.ico")
-#         self.root.geometry("300x500")
-
-#         # Initialize variables
-#         self.username_var = tk.StringVar()
-#         self.password_var = tk.StringVar()
-
-#         # Create the login screen
-#         self.create_login_screen()
-
-#     def create_login_screen(self):
-#         # Create widgets
-#         username_label = tb.Label(self.root, text="Username:", font=("Helvetica", 12, "bold"), bootstyle="light")
-#         username_entry = tb.Entry(self.root, textvariable=self.username_var, width=15, font=("Helvetica", 12, "bold"))
-#         password_label = tb.Label(self.root, text="Password:", font=("Helvetica", 12, "bold"), bootstyle="light")
-#         password_entry = tb.Entry(self.root, textvariable=self.password_var, show='*', width=15, font=("Helvetica", 12, "bold"))
-#         login_button = tb.Button(self.root, text="Login", bootstyle="primary", command=self.check_login)
-#         create_account_button = tb.Button(self.root, text="Create Account", bootstyle="primary", command=self.create_account)
-
-#         # Place widgets
-#         username_label.pack(pady=5, padx=5, anchor="nw")
-#         username_entry.pack(pady=5, padx=5, expand=YES, anchor="n")
-#         password_label.pack(pady=5, padx=5, anchor="nw")
-#         password_entry.pack(pady=5, padx=5, expand=YES, anchor="n")
-#         login_button.pack(padx=5, pady=5)
-#         create_account_button.pack(padx=5, pady=5)
-
-#     def check_login(self):
-#         username = self.username_var.get()
-#         password = self.password_var.get()
-
-#         if not username or not password:
-#             Messagebox.show_error(title="Error", message="Please enter a username and password.")
-#             return
-
-#         # Here, you should check the username and password against a secure database or file with hashed passwords.
-#         # For security reasons, avoid storing plain-text passwords.
-
-#         if self.check_credentials(username, password):
-#             self.open_diary_app()
-#         else:
-#             Messagebox.show_error(title="Error", message="Incorrect username or password.")
-
-#         # Clear password field for security
-#         self.password_var.set("")
-
-#     def create_account(self):
-#         # Implement your account creation logic here, similar to check_login.
-#         # Remember to securely hash and store the password.
-#         pass
-        
-#     def check_credentials(self, username, password):
-#         # Implement your credential checking logic here.
-#         # This function should return True if the credentials are valid, False otherwise.
-#         # You should check the username and hashed password against your database or file.
-#         pass
-#     def open_diary_app(self):
-#         # Implement the logic to open the diary app after successful login.
-#         # You can hide the current login screen or destroy it and create a new window for the diary app.
-#         pass     
+    
 class DiaryApp:
     ### CREATE DIARY UI ON INIT
     def __init__(self):
@@ -100,8 +34,8 @@ class DiaryApp:
         self.mainFrame.pack(fill="both", expand=True, padx=10, pady=5)
         self.entryFrame = tb.Frame(self.root, width=560, height=80, bootstyle="light")
         self.entryFrame.pack(padx=10, pady=10, anchor="w", fill="both", expand=True)
-        self.buttonFrame = tb.Labelframe(self.root, width=560, height=80, text="Options", bootstyle="light")
-        self.buttonFrame.pack(padx=10, pady=10, anchor="w", fill="both", expand=True)
+        self.buttonFrame = tb.Labelframe(self.root, width=500, height=80, text="Options", bootstyle="light")
+        self.buttonFrame.pack(padx=10, pady=10, anchor="center")
         
         #----------------- WIDGETS -----------------#
         # Date Label 
@@ -113,16 +47,18 @@ class DiaryApp:
         # Place title placeholder
         self.title.insert(0, "Enter Title")
         # Dear Diary Label
-        self.label2 = tb.Label(self.mainFrame, text="Dear Diary,", font=("Helvetica", 16, "italic"), bootstyle="light")
+        self.label2 = tb.Label(self.mainFrame, text="Dear Diary,", font=("Helvetica", 18, "bold", "italic"), bootstyle="light")
         self.label2.pack(pady=5, padx=5, anchor="nw")
         # Diary Entry
-        self.entry = ScrolledText(self.entryFrame, height=20, width=50, wrap=WORD, bootstyle=("secondary", "rounded"), font=("Helvetica", 10))
+        self.entry = ScrolledText(self.entryFrame, height=18, width=40, wrap=WORD, bootstyle=("secondary", "rounded"), font=("Helvetica", 12, "italic"))
         self.entry.pack(pady=5, padx=5, expand=YES, side="left", anchor="w")
         
         # Treeview of entries
         self.tree = tb.Treeview(self.entryFrame, bootstyle="primary", columns=("Date", "Title"), show="headings")
-        self.tree.heading("Date", text="Date", anchor="w")
-        self.tree.heading("Title", text="Title", anchor="w")                 
+        self.tree.heading("Date", text="Date", anchor="center")
+        self.tree.column("Date", width=100, anchor="center")
+        self.tree.heading("Title", text="Title")  
+        self.tree.column("Title", width=200, anchor="center")               
         self.tree.pack(padx=5, pady=10, fill="both", expand=True)
         # Populate treeview with entries
         self.populate_tree_with_entries()
@@ -303,6 +239,5 @@ class DiaryApp:
         
 # Run the app
 if __name__ == "__main__":
-    # test_login = LoginScreen()
     app = DiaryApp()
     
