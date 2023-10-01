@@ -13,12 +13,13 @@ class DiaryApp:
     def __init__(self):
         # root window
         self.root = tb.Window(title="DearDiary")
-        self.root.style.theme_use("vapor")
-        self.root.iconbitmap("DearDiary.ico")
+        self.root.style.theme_use("deardiary")
+        self.root.iconbitmap("DearDiary_icon.ico")
         self.root.geometry("700x600")
         self.root.resizable(False, False)
         self.date = datetime.datetime.now().strftime("%m/%d/%Y")
         self.time = datetime.datetime.now().strftime("%H:%M")
+        
         
         
          #----------------- MAKE DIRECTORY -----------------#
@@ -32,7 +33,7 @@ class DiaryApp:
         #----------------- FRAMES -----------------#
         self.mainFrame = tb.Frame(self.root)
         self.mainFrame.pack(fill="both", expand=True, padx=10, pady=5)
-        self.entryFrame = tb.Frame(self.root, width=560, height=80, bootstyle="light")
+        self.entryFrame = tb.Frame(self.root, width=560, height=80, bootstyle="info")
         self.entryFrame.pack(padx=10, pady=10, anchor="w", fill="both", expand=True)
         self.buttonFrame = tb.Labelframe(self.root, width=500, height=80, text="Options", bootstyle="light")
         self.buttonFrame.pack(padx=10, pady=10, anchor="center")
@@ -51,7 +52,7 @@ class DiaryApp:
         self.label2.pack(pady=5, padx=5, anchor="nw")
         # Diary Entry
         self.entry = ScrolledText(self.entryFrame, height=18, width=40, wrap=WORD, bootstyle=("secondary", "rounded"), font=("Helvetica", 12, "italic"))
-        self.entry.pack(pady=5, padx=5, expand=YES, side="left", anchor="w")
+        self.entry.pack(pady=10, padx=10, expand=YES, side="left", anchor="w")
         
         # Treeview of entries
         self.tree = tb.Treeview(self.entryFrame, bootstyle="primary", columns=("Date", "Title"), show="headings")
@@ -59,7 +60,7 @@ class DiaryApp:
         self.tree.column("Date", width=100, anchor="center")
         self.tree.heading("Title", text="Title")  
         self.tree.column("Title", width=200, anchor="center")               
-        self.tree.pack(padx=5, pady=10, fill="both", expand=True)
+        self.tree.pack(padx=10, pady=10, fill="both", expand=True, side="left")
         # Populate treeview with entries
         self.populate_tree_with_entries()
         # Bind double click to treeview to view entry
@@ -69,17 +70,17 @@ class DiaryApp:
         self.saveButton = tb.Button(self.buttonFrame, text="Save New Entry", bootstyle="primary", command=self.saveEntryData)
         self.saveButton.pack(padx=5, pady=5, side="left")
         # Edit Entry Button
-        self.editButton = tb.Button(self.buttonFrame, text="Save Changes", bootstyle="primary", command=self.editEntry)
+        self.editButton = tb.Button(self.buttonFrame, text="Save Changes", bootstyle="danger", command=self.editEntry)
         self.editButton.pack(padx=5, pady=5, side="left")
         # Grey out edit button by default
         self.editButton.config(state="disabled")
         # Delete Entry Button
-        self.deleteButton = tb.Button(self.buttonFrame, text="Delete Entry", bootstyle="primary", command=self.deleteEntry)
+        self.deleteButton = tb.Button(self.buttonFrame, text="Delete Entry", bootstyle="secondary", command=self.deleteEntry)
         self.deleteButton.pack(padx=5, pady=5, side="left")
         # Grey out delete button by default
         self.deleteButton.config(state="disabled")
         # Create new entry button
-        self.newEntryButton = tb.Button(self.buttonFrame, text="Create New Entry", bootstyle="primary", command=self.clearEntry)
+        self.newEntryButton = tb.Button(self.buttonFrame, text="Create New Entry", bootstyle="info", command=self.clearEntry)
         self.newEntryButton.pack(padx=5, pady=5, side="left")
         # Disable button by default
         self.newEntryButton.config(state="disabled")
