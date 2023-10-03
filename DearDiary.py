@@ -14,9 +14,14 @@ class DiaryApp:
         # root window
         self.root = tb.Window(title="DearDiary")
         self.root.style.theme_use("deardiary")
+        # Main App Icon
         self.root.iconbitmap("DearDiary_icon.ico")
+        # Message Box icon
+        self.root.iconbitmap(default="DearDiary_icon.ico")
         self.root.geometry("700x600")
         self.root.resizable(False, False)
+        # Place window in center of screen
+        self.root.place_window_center()
         self.date = datetime.datetime.now().strftime("%m/%d/%Y")
         self.time = datetime.datetime.now().strftime("%H:%M")
         
@@ -212,17 +217,24 @@ class DiaryApp:
         values = self.tree.item(selected, "values")
         date = values[0]
         title = values[1]
-        # Delete file
-        os.remove(f"{self.folderName}/{title}_{date}.txt")
         
-        # Clear entry and title
-        self.clearEntry()
+        # Confirm deletion
+        confirm = Messagebox.yesno(title="Confirm Deletion", message="Are you sure you want to delete this entry?")
         
-        # Let user know entry was deleted
-        Messagebox.show_info(title="Success", message="Your entry was deleted successfully.")
-        
-        # Populate treeview with entries
-        self.populate_tree_with_entries()    
+        if confirm == "Yes":
+            # Delete file
+            os.remove(f"{self.folderName}/{title}_{date}.txt")
+            
+            # Clear entry and title
+            self.clearEntry()
+            
+            # Let user know entry was deleted
+            Messagebox.show_info(title="Success", message="Your entry was deleted successfully.")
+            
+            # Populate treeview with entries
+            self.populate_tree_with_entries()
+        else:
+            return    
     
     def populate_tree_with_entries(self):
         self.tree.delete(*self.tree.get_children()) # Clear tree
